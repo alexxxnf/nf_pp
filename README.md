@@ -17,7 +17,8 @@ Features
 * print tree-like view for arrays and objects;
 * fold nodes in arrays and objects;
 * fold whole tree or unfold tree to a certain key;
-* display file and line where the function was called.
+* display file and line where the function was called;
+* print elapsed time between function calls.
 
 Usage
 -----

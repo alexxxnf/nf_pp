@@ -11,9 +11,10 @@
  *     - trim long strings;
  *     - fold nodes in arrays and objects;
  *     - fold whole tree or unfold tree to a certain key;
+ *     - print elapsed time between function calls.
  * 
  * @author MAYDOKIN Aleksey
- * @version 1.2.3
+ * @version 1.3.0
  */
 class nf_pp {
 
@@ -23,9 +24,13 @@ class nf_pp {
 		$autoOpen      = array();
 	
 	protected static
-		$jsFuncDisp = FALSE,
-		$cssDisp    = FALSE;
-	
+		$jsFuncDisp   = FALSE,
+		$cssDisp      = FALSE,
+		$lastCallTime = 0;
+
+	const TRACE_DEPTH = 0;  //  how many wrap functions has pp-method ( except pp-function )
+
+
 	function __construct(){
 
 		$options = func_get_args();
@@ -93,6 +98,7 @@ class nf_pp {
 	
 		if( $curLevel == 0 ){
 			$this->backtrace();
+			$this->timestamp();
 			$md5 = md5( serialize($val).rand() );
 			echo '<ul id="pp_'.$md5.'" class="pp_tree">';
 		}
@@ -190,7 +196,7 @@ class nf_pp {
 	
 		$size = sizeof( $val );
 	
-		echo '<span class="pp_array">Array</span><i class="pp_ctrl pp_ctrlCollapseCh">('.$size.')</i><ul class="pp_subtree">';
+		echo '<span class="pp_array">Array</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i><ul class="pp_subtree">';
 		
 		if( $size ){
 		
@@ -213,7 +219,7 @@ class nf_pp {
 		$val = (array)$val;
 		$size = sizeof( $val );
 		
-		echo '<span class="pp_object">Object &lt;'.$className.'&gt;</span><i class="pp_ctrl pp_ctrlCollapseCh">('.$size.')</i><ul class="pp_subtree">';
+		echo '<span class="pp_object">Object &lt;'.$className.'&gt;</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i><ul class="pp_subtree">';
 		
 		if( $size ){
 		
@@ -266,12 +272,33 @@ class nf_pp {
 		$backtrace = debug_backtrace();
 		
 		if( $backtrace[2]['function'] == 'pp' )
-			$arToPrint = $backtrace[2];  //  run as function
+			$arToPrint = $backtrace[2 + self::TRACE_DEPTH];  //  run as a function
 		else
-			$arToPrint = $backtrace[1];  //  run as method
+			$arToPrint = $backtrace[1 + self::TRACE_DEPTH];  //  run as a method
 
-		echo '<div class="pp_mark">'.$arToPrint['file'].' '.$arToPrint['line'].'</div>';
+		echo '<div class="pp_mark">'.$arToPrint['file'].' <span title="Line number">'.$arToPrint['line'].'</span></div>';
 	
+	}
+	
+	
+	/**
+	 *  Prints elapsed time between function calls.
+	 */
+	protected function timestamp(){
+	
+		$curTime = microtime( TRUE );
+		
+		echo '<div class="pp_mark" title="Elapsed time between function calls">';
+		
+		if( self::$lastCallTime > 0 )
+			echo ( $curTime - self::$lastCallTime ).' sec.';
+		else
+			echo 'first call';
+			
+		echo '</div>';
+
+		self::$lastCallTime = $curTime;
+
 	}
 	
 	protected function p_jsfunc(){
@@ -380,6 +407,7 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 		}
 
 		var ctrl = document.createElement( \'i\' );
+		ctrl.setAttribute( \'title\', \'Fold/unfold\' );
 		ctrl.innerHTML = sign;
 		ctrl.className = \'pp_ctrl \' + actClass;
 		applyHdlr( ctrl, ctrlHandler );
