@@ -23,6 +23,9 @@ class nf_pp {
 		$autoCollapsed = FALSE,
 		$autoOpen      = array();
 
+	protected
+		$arRecursion = array();
+
 	protected static
 		$jsFuncDisp   = FALSE,
 		$cssDisp      = FALSE,
@@ -98,6 +101,7 @@ class nf_pp {
 	function pp( $val, $curLevel = 0, $key = NULL, $isLast = true ){
 
 		if( $curLevel == 0 ){
+			$this->arRecursion = array();  //  drop recursion cache between top-level funciton calls
 			$domId = 'pp_' . ++self::$callCntr;
 			echo '<div class="pp_wrap" id="'.$domId.'">';
 			$this->backtrace();
@@ -247,31 +251,42 @@ class nf_pp {
 		echo '<span class="pp_object">Object &lt;'.$className.'&gt;</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i></div>';
 		echo '<ul class="pp_container">';
 
-		if( $size ){
+		if( ! in_array( $val, $this->arRecursion, true ) ){  //  check for recursion
 
-			$c = 1;
-			foreach( $val as $k => $v ){
+			if( $size ){
 
-				if( strpos( $k, chr(0).$className.chr(0) ) === 0 ){
-					$k = str_replace( chr(0).$className.chr(0), '', $k );
-					$k = htmlspecialchars( $k ).':<span class="pp_scope pp_scope_private">private</span>';
-				}
-				elseif( strpos( $k, chr(0).'*'.chr(0) ) === 0 ){
-					$k = str_replace( chr(0).'*'.chr(0), '', $k );
-					$k = htmlspecialchars( $k ).':<span class="pp_scope pp_scope_protected">protected</span>';
-				}
-				else{
-					$k = htmlspecialchars( $k ).':<span class="pp_scope pp_scope_public">public</span>';
+				$this->arRecursion[] = $val;
+
+				$c = 1;
+				foreach( $val as $k => $v ){
+
+					if( strpos( $k, chr(0).$className.chr(0) ) === 0 ){
+						$k = str_replace( chr(0).$className.chr(0), '', $k );
+						$k = htmlspecialchars( $k ).':<span class="pp_scope pp_scope_private">private</span>';
+					}
+					elseif( strpos( $k, chr(0).'*'.chr(0) ) === 0 ){
+						$k = str_replace( chr(0).'*'.chr(0), '', $k );
+						$k = htmlspecialchars( $k ).':<span class="pp_scope pp_scope_protected">protected</span>';
+					}
+					else{
+						$k = htmlspecialchars( $k ).':<span class="pp_scope pp_scope_public">public</span>';
+					}
+
+					echo $this->pp( $v, $curLevel + 1, $k, $c++ == $size );
+
 				}
 
-				echo $this->pp( $v, $curLevel + 1, $k, $c++ == $size );
+			}
+			else{
+
+				echo '<li class="pp_node pp_expandLeaf pp_isLast"><div class="pp_expand"></div><div class="pp_content"><span class="pp_empty">EMPTY</span></div></li>';
 
 			}
 
 		}
-		else{
+		else {
 
-			echo '<li class="pp_node pp_expandLeaf pp_isLast"><div class="pp_expand"></div><div class="pp_content"><span class="pp_empty">EMPTY</span></div></li>';
+			echo '<li class="pp_node pp_expandLeaf pp_isLast"><div class="pp_expand"></div><div class="pp_content"><span class="pp_empty">RECURSION</span></div></li>';
 
 		}
 
