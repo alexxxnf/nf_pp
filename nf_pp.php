@@ -11,10 +11,11 @@
  *     - trim long strings;
  *     - fold nodes in arrays and objects;
  *     - fold whole tree or unfold tree to a certain key;
- *     - print elapsed time between function calls.
+ *     - print elapsed time between function calls;
+ *     - search in keys and values.
  *
  * @author MAYDOKIN Aleksey
- * @version 2.0.0
+ * @version 2.1.0
  */
 class nf_pp {
 
@@ -106,6 +107,7 @@ class nf_pp {
 			echo '<div class="pp_wrap" id="'.$domId.'">';
 			$this->backtrace();
 			$this->timestamp();
+			echo '<div><input type="search" class="pp_search"><span class="pp_found"></span></div>';
 			echo '<div><a href="javascript:;" class="pp_top">on top</a></div>';
 			echo '<ul class="pp_container">';
 		}
@@ -187,19 +189,19 @@ class nf_pp {
 
 	protected function p_bool( $val ){
 
-		echo '<span class="pp_bool">'.strtoupper( var_export( $val, TRUE ) ).'</span></div>';
+		echo '<span class="pp_bool pp_value">'.strtoupper( var_export( $val, TRUE ) ).'</span></div>';
 
 	}
 
 	protected function p_null( $val ){
 
-		echo '<span class="pp_null">'.strtoupper( var_export( $val, TRUE ) ).'</span></div>';
+		echo '<span class="pp_null pp_value">'.strtoupper( var_export( $val, TRUE ) ).'</span></div>';
 
 	}
 
 	protected function p_basic( $val ){
 
-		echo '<span class="pp_num">'.$val.'</span></div>';
+		echo '<span class="pp_num pp_value">'.$val.'</span></div>';
 
 	}
 
@@ -215,7 +217,7 @@ class nf_pp {
 
 		}
 
-		echo '<span class="pp_string">'.$val.'</span></div>';
+		echo '<span class="pp_string pp_value">'.$val.'</span></div>';
 
 	}
 
@@ -223,7 +225,7 @@ class nf_pp {
 
 		$size = sizeof( $val );
 
-		echo '<span class="pp_array">Array</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i></div>';
+		echo '<span class="pp_array pp_value">Array</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i></div>';
 		echo '<ul class="pp_container">';
 
 		if( $size ){
@@ -248,7 +250,7 @@ class nf_pp {
 		$val = (array)$val;
 		$size = sizeof( $val );
 
-		echo '<span class="pp_object">Object &lt;'.$className.'&gt;</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i></div>';
+		echo '<span class="pp_object pp_value">Object &lt;'.$className.'&gt;</span><i class="pp_ctrl pp_ctrlCollapseCh" title="Fold/unfold children">('.$size.')</i></div>';
 		echo '<ul class="pp_container">';
 
 		if( ! in_array( $val, $this->arRecursion, true ) ){  //  check for recursion
@@ -296,13 +298,13 @@ class nf_pp {
 
 	protected function p_res( $val ){
 
-		echo '<span class="pp_resource">'.$val.' &lt;'.get_resource_type( $val ).'&gt;</span></div>';
+		echo '<span class="pp_resource pp_value">'.$val.' &lt;'.get_resource_type( $val ).'&gt;</span></div>';
 
 	}
 
 	protected function p_unknown( $val ){
 
-		echo '<span class="pp_unknown">"'.$val.'"</span></div>';
+		echo '<span class="pp_unknown pp_value">"'.$val.'"</span></div>';
 
 	}
 
@@ -360,12 +362,16 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 		classClosed     = \'pp_expandClosed\',
 		classCollapseCh = \'pp_ctrlCollapseCh\',
 		classKey        = \'pp_key\',
+		classValue      = \'pp_value\',
 		classNode       = \'pp_node\',
 		classRoot       = \'pp_isRoot\',
+		classFoundInText = \'pp_found_in_text\',
 		re              =  new RegExp( \'(^|\\\\s)(\'+classOpened+\'|\'+classClosed+\')(\\\\s|$)\' );
 
 
-	var wrap = document.getElementById( id );
+	var
+		wrap = document.getElementById( id ),
+		searchInput = wrap.children[2].firstChild;
 
 	if( autoCollapsed )
 		autoCollapseTree( wrap );
@@ -374,6 +380,9 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 		autoOpenTree( wrap, autoOpen );
 
 	applyHdlr( wrap, tree_toggle );
+	applyHdlr( searchInput, searchHdlr, \'input\' );
+	applyHdlr( searchInput, function(){ if (event.propertyName == \'value\') searchHdlr.apply( this ); }, \'propertychange\' );
+	applyHdlr( searchInput, searchKeyHdlr, \'keyup\' );
 
 
 	function tree_toggle( event ){
@@ -540,6 +549,132 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 	}
 
 
+	function searchHdlr(){
+
+		var
+			searchString = this.value,
+			found = recSearch( this.parentNode.nextSibling.nextSibling, this.value.toLowerCase() );
+
+		this.nextSibling.innerHTML = \'found: \' + found.length;
+		this.found = found;
+
+	}
+
+
+	function searchKeyHdlr( event ){
+
+		event = event || window.event;
+
+		//  hit ENTER
+		if( event.keyCode == 13 && this.found && this.found.length ){
+
+			var firstFound = this.found.pop();
+
+			openNodeUpWard( firstFound );
+			firstFound.scrollIntoView();
+
+			this.found.unshift( firstFound );
+
+		}
+
+	}
+
+
+	function recSearch( node, text ){
+
+		var found = [];
+
+		if ( node.tagName == \'SPAN\' && hasClass( node, classKey+\'|\'+classValue ) ) {
+
+			//  remove old marks
+			if( node.getElementsByTagName( \'EM\' ).length ){
+
+				var prevNode = null;
+				var i = 0;
+
+				while( i < node.childNodes.length ){
+
+					var curNode = node.childNodes[i];
+
+					if( curNode.nodeType == 3 ){
+
+						if( prevNode ){
+							prevNode.nodeValue += curNode.nodeValue;
+							node.removeChild( curNode );
+						}
+						else{
+							prevNode = curNode;
+							++i;
+						}
+
+					}
+					else if(curNode.nodeType == 1 ){
+
+						if( hasClass( curNode, classFoundInText ) ){
+							if( ! prevNode ){
+								prevNode = document.createTextNode( \'\' );
+								node.insertBefore( prevNode, curNode );
+								++i;
+							}
+							prevNode.nodeValue += curNode.innerText || curNode.textContent;
+							node.removeChild( curNode );
+						}
+						else{
+							prevNode = null;
+							++i;
+						}
+
+					}
+
+				}
+
+			}
+
+
+			if( text ){
+
+				var
+					textLength = text.length,
+					textNode = node.childNodes[0],
+					startPos = textNode.nodeValue.toLowerCase().indexOf( text );
+
+				if( startPos > -1 ){
+
+					var
+						foundText = textNode.nodeValue.substring(
+							startPos,
+							startPos + textLength
+						),
+						mark = document.createElement( \'EM\' );
+
+					mark.className = classFoundInText;
+					mark.appendChild( document.createTextNode( foundText ) );
+
+					var tail = textNode.splitText( startPos );
+					tail.nodeValue = tail.nodeValue.substring( textLength );
+					node.insertBefore( mark, tail );
+
+					found.push( node );
+
+				}
+
+			}
+
+		}
+		else if( node.children.length ){
+
+			var children = node.children;
+			for( var i = children.length - 1; i >= 0; i-- ){
+				found = found.concat( recSearch( children[i], text ) );
+			}
+
+		}
+
+		return found;
+
+	}
+
+
 	function hasClass( elem, className ){
 
 		return new RegExp( \'(^|\\\\s)\'+className+\'(\\\\s|$)\' ).test( elem.className );
@@ -702,6 +837,14 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 }
 .pp_array {
 	color: #121acc;
+}
+.pp_search {
+	margin-right: 1em;
+}
+.pp_found_in_text {
+	background: #38d878;
+	font: inherit;
+	color: #000;
 }
 </style>';
 

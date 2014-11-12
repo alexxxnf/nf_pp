@@ -18,7 +18,8 @@ Features
 * fold nodes in arrays and objects;
 * fold whole tree or unfold tree to a certain key;
 * display file and line where the function was called;
-* print elapsed time between function calls.
+* print elapsed time between function calls;
+* search in keys and values.
 
 Usage
 -----
@@ -32,15 +33,15 @@ And use it.
 
     $pp->pp( $val1 );
     $pp->pp( $val2 );
-	
+
 If you don't like to create an object, you can use a shortcut function.
 
     pp( $val, array( 'trimString' => 0 ) );
 
 ### Options
 
-`trimString` — Default value is 100 simbols. 0 — disable trimming.  
-`autoCollapsed`	— Fold tree. Default value is `FALSE`.  
+`trimString` — Default value is 100 simbols. 0 — disable trimming.
+`autoCollapsed`	— Fold tree. Default value is `FALSE`.
 `autoOpen` — Array of keys or a single key which will be used to unfold the tree.
 
 You can pass options to the function as an array or one by one in any order. For example:
@@ -59,7 +60,7 @@ Options are determined by types. If number is passed, then it is `trimString` op
 
 ### Examples
 
-See `demo.php`.  
+See `demo.php`.
 Online demo can be found here [http://blog.alexxxnf.ru/demo/print_r/](http://blog.alexxxnf.ru/demo/print_r/).
 
 Print an array
