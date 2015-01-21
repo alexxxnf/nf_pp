@@ -9,8 +9,9 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 		classValue      = 'pp_value',
 		classNode       = 'pp_node',
 		classRoot       = 'pp_isRoot',
-		classFoundInText = 'pp_found_in_text',
-		re              =  new RegExp( '(^|\\s)('+classOpened+'|'+classClosed+')(\\s|$)' );
+		classOnTop      = 'pp_fixed',
+		classFoundInText = 'pp_foundInText',
+		classNoTrim     = 'pp_noTrim';
 
 
 	var
@@ -55,20 +56,32 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 			onTop( wrap );
 
 		}
+		else if ( hasClass( clickedElem, classValue ) ) {
+
+			var node = clickedElem.parentNode;
+
+			if( hasClass( node, classNoTrim ) )
+				enableTrim( node );
+			else
+				disableTrim( node );
+
+		}
 
 	}
 
 
 	function closeNode( node ){
 
-		node.className = node.className.replace( re, '$1'+classClosed+'$3' );
+		removeClass( node, classOpened );
+		addClass( node, classClosed );
 
 	}
 
 
 	function openNode( node ){
 
-		node.className = node.className.replace( re, '$1'+classOpened+'$3' );
+		removeClass( node, classClosed );
+		addClass( node, classOpened );
 
 	}
 
@@ -172,21 +185,35 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 	}
 
 
+	function disableTrim( node ) {
+
+		addClass( node, classNoTrim );
+
+	}
+
+
+	function enableTrim( node ) {
+
+		removeClass( node, classNoTrim );
+
+	}
+
+
 	function onTop( wrap ){
 
-		if( hasClass( wrap, 'pp_fixed' ) ){
-			wrap.className = wrap.className.replace( ' pp_fixed', '' );
+		if( hasClass( wrap, classOnTop ) ){
+			removeClass( wrap, classOnTop );
 		}
 		else {
 
 			var divs = document.getElementsByTagName( 'DIV' );
 			for( var c = divs.length - 1; c >= 0; c-- ){
-				if( hasClass( divs[c], 'pp_fixed' ) ){
-					divs[c].className = divs[c].className.replace( ' pp_fixed', '' );
+				if( hasClass( divs[c], classOnTop ) ){
+					removeClass( divs[c], classOnTop );
 				}
 			}
 
-			wrap.className += ' pp_fixed';
+			addClass( wrap, classOnTop );
 
 		}
 
@@ -214,6 +241,7 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 
 			var firstFound = this.found.pop();
 
+			disableTrim( firstFound.parentNode );
 			openNodeUpWard( firstFound );
 			firstFound.scrollIntoView();
 
@@ -228,7 +256,7 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 
 		var found = [];
 
-		if ( node.tagName == 'SPAN' && hasClass( node, classKey+'|'+classValue ) ) {
+		if ( node.tagName == 'SPAN' && hasClass( node, classKey ) || hasClass( node, classValue ) ) {
 
 			//  remove old marks
 			if( node.getElementsByTagName( 'EM' ).length ){
@@ -291,7 +319,7 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 						),
 						mark = document.createElement( 'EM' );
 
-					mark.className = classFoundInText;
+					addClass( mark, classFoundInText);
 					mark.appendChild( document.createTextNode( foundText ) );
 
 					var tail = textNode.splitText( startPos );
@@ -321,7 +349,23 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 
 	function hasClass( elem, className ){
 
-		return new RegExp( '(^|\\s)'+className+'(\\s|$)' ).test( elem.className );
+		return ( ' ' + elem.className + ' ' ).indexOf( ' ' + className + ' ' ) >= 0;
+
+	}
+
+
+	function addClass( elem, className ){
+
+		if ( ! hasClass( elem, className ) ) {
+			elem.className += ( elem.className ? ' ' : '' ) + className;
+		}
+
+	}
+
+
+	function removeClass( elem, className ){
+
+		elem.className = elem.className.split( className ).join( '' ).replace( /^\s+|\s+$/g, '' );
 
 	}
 

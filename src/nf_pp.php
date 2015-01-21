@@ -15,12 +15,12 @@
  *     - search in keys and values.
  *
  * @author MAYDOKIN Aleksey
- * @version 2.1.0
+ * @version 2.1.1
  */
 class nf_pp {
 
 	public
-		$trimString    = 100,
+		$trimString    = 1000,
 		$autoCollapsed = FALSE,
 		$autoOpen      = array();
 

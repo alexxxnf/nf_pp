@@ -29,6 +29,13 @@
 .pp_content {
 	min-height: 18px;
 	margin-left: 18px;
+	line-height: 1.4;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.pp_content.pp_noTrim {
+	white-space: normal;
 }
 * html .pp_content {
 	height: 18px;
@@ -119,7 +126,7 @@
 .pp_search {
 	margin-right: 1em;
 }
-.pp_found_in_text {
+.pp_foundInText {
 	background: #38d878;
 	font: inherit;
 	color: #000;
