@@ -7,7 +7,7 @@
 }
 .pp_node {
 	background: url('data:image/gif;base64,R0lGODlhEgASAIABAHJycv///yH5BAEAAAEALAAAAAASABIAAAIejB+Ay6YNU4RvrmoPzpJr/4EduGWldU5ptFLi6LUFADs=') repeat-y;
-	margin-left: 18px;
+	margin: 0 0 0 18px;
 	zoom: 1;
 }
 .pp_isLast {
@@ -61,7 +61,6 @@
 	font: normal 14.3px/1.4 monospace;
 	margin: 0 0 10px 0;
 	padding: 5px 10px;
-	background: #FFF;
 	border: 1px solid #000;
 }
 .pp_fixed {
@@ -73,6 +72,7 @@
 	left: 50%;
 	top: 50%;
 	z-index: 9999;
+	background: #FFF;
 }
 .pp_mark {
 	padding: 0;

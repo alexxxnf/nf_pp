@@ -107,7 +107,7 @@ class nf_pp {
 			echo '<div class="pp_wrap" id="'.$domId.'">';
 			$this->backtrace();
 			$this->timestamp();
-			echo '<div><input type="search" class="pp_search"><span class="pp_found"></span></div>';
+			echo '<div><input type="search" class="pp_search" placeholder="Search"><span class="pp_found"></span></div>';
 			echo '<div><a href="javascript:;" class="pp_top">on top</a></div>';
 			echo '<ul class="pp_container">';
 		}
