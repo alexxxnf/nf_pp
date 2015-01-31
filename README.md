@@ -40,9 +40,9 @@ If you don't like to create an object, you can use a shortcut function.
 
 ### Options
 
-`trimString` — Default value is 100 simbols. 0 — disable trimming.
-`autoCollapsed`	— Fold tree. Default value is `FALSE`.
-`autoOpen` — Array of keys or a single key which will be used to unfold the tree.
+`trimString` &mdash; Default value is 1000 simbols. 0 &mdash; disable trimming.
+`autoCollapsed`	&mdash; Fold tree. Default value is `FALSE`.
+`autoOpen` &mdash; Array of keys or a single key which will be used to unfold the tree.
 
 You can pass options to the function as an array or one by one in any order. For example:
 
@@ -61,21 +61,21 @@ Options are determined by types. If number is passed, then it is `trimString` op
 ### Examples
 
 See `demo.php`.
-Online demo can be found here [http://blog.alexxxnf.ru/demo/print_r/](http://blog.alexxxnf.ru/demo/print_r/).
+Online demo can be found here [http://demo.alexxxnf.ru/print_r/](http://demo.alexxxnf.ru/print_r/).
 
-Print an array
+Print an array. [Demo](http://demo.alexxxnf.ru/print_r/)
 
     pp( $val );
 
-Print folded array
+Print folded array. [Demo](http://demo.alexxxnf.ru/print_r/#autoCollapsed)
 
     pp( $val, TRUE );
 
-Print folded array and unfold it to keys "c" and "subarray"
+Print folded array and unfold it to keys "c" and "subarray". [Demo](http://demo.alexxxnf.ru/print_r/#autoOpened)
 
     pp( $val, array( 'autoOpen' => array( 'c', 'subarray' ) ) );
 
-Print folded array and unfold it to key "c"
+Print folded array and unfold it to key "c". [Demo](http://demo.alexxxnf.ru/print_r/#autoOpened2)
 
     pp( $val, array( 'autoOpen' => array( 'c' ) ) );
 
