@@ -1,0 +1,20 @@
+{
+	"name": "alexxxnf/nf_pp",
+	"description": "Pretty \"print_r\" with some additional features",
+	"keywords": ["print_r", "var_dump", "print", "dump", "debug", "array", "object"],
+	"homepage": "https://github.com/alexxxnf/nf_pp/",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Aleksey Maydokin",
+			"email": "amaydokin@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.2.0"
+	},
+	"autoload" : {
+		"files": ["nf_pp.php"]
+	}
+}
