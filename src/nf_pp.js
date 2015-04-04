@@ -226,8 +226,9 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 			searchString = this.value,
 			found = recSearch( this.parentNode.nextSibling.nextSibling, this.value.toLowerCase() );
 
-		this.nextSibling.innerHTML = 'found: ' + found.length;
+		this.parentNode.getElementsByTagName('SPAN')[0].innerHTML = 'found: ' + found.length;
 		this.found = found;
+		this.foundCurIdx = -1;
 
 	}
 
@@ -239,15 +240,45 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 		//  hit ENTER
 		if( event.keyCode == 13 && this.found && this.found.length ){
 
-			var firstFound = this.found.pop();
+			if( event.shiftKey )
+				moveFoundIndexBackward( this );
+			else
+				moveFoundIndexForward( this );
 
-			disableTrim( firstFound.parentNode );
-			openNodeUpWard( firstFound );
-			firstFound.scrollIntoView();
-
-			this.found.unshift( firstFound );
+			gotoFoundNode( this.found[this.foundCurIdx] );
 
 		}
+
+	}
+
+
+	function moveFoundIndexForward( searchInput ){
+
+		if( searchInput.foundCurIdx == searchInput.found.length - 1)
+			searchInput.foundCurIdx = 0;
+		else
+			++searchInput.foundCurIdx;
+
+	}
+
+
+	function moveFoundIndexBackward( searchInput ){
+
+		if( searchInput.foundCurIdx <= 0)
+			searchInput.foundCurIdx = searchInput.found.length - 1;
+		else
+			--searchInput.foundCurIdx;
+
+	}
+
+
+	function gotoFoundNode( gotoNode ){
+
+		var valueNode = gotoNode.parentNode;
+
+		disableTrim( valueNode.parentNode );
+		openNodeUpWard( valueNode );
+		gotoNode.scrollIntoView();
 
 	}
 
@@ -308,9 +339,9 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 				var
 					textLength = text.length,
 					textNode = node.childNodes[0],
-					startPos = textNode.nodeValue.toLowerCase().indexOf( text );
+					startPos = -1;
 
-				if( startPos > -1 ){
+				while ((startPos = textNode.nodeValue.toLowerCase().indexOf( text, startPos + 1 )) != -1) {
 
 					var
 						foundText = textNode.nodeValue.substring(
@@ -326,7 +357,9 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 					tail.nodeValue = tail.nodeValue.substring( textLength );
 					node.insertBefore( mark, tail );
 
-					found.push( node );
+					found.push( mark );
+
+					textNode = tail;
 
 				}
 
@@ -336,7 +369,7 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
 		else if( node.children.length ){
 
 			var children = node.children;
-			for( var i = children.length - 1; i >= 0; i-- ){
+			for( var i = 0, l = children.length; i < l; ++i ){
 				found = found.concat( recSearch( children[i], text ) );
 			}
 

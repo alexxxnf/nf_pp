@@ -19,7 +19,7 @@ Features
 * fold whole tree or unfold tree to a certain key;
 * display file and line where the function was called;
 * print elapsed time between function calls;
-* search in keys and values.
+* search in keys and values (hit ENTER or Shift+ENTER in search field to navigate).
 
 Usage
 -----

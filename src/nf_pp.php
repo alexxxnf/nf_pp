@@ -15,7 +15,7 @@
  *     - search in keys and values.
  *
  * @author MAYDOKIN Aleksey
- * @version 2.1.1
+ * @version 2.2.0
  */
 class nf_pp {
 
